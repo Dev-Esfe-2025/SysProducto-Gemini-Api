@@ -1,0 +1,74 @@
+﻿@model List<Producto>
+<div class="container mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Buscar Productos</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+                  
+                    <div class="form-group">
+                        <input type="submit" value="Buscar" class="btn btn-primary" />
+                        
+                                <a asp-action="ReporteProductos" class="btn btn-dark">Generar Reporte</a>
+                                <a asp-action="ReporteProductosExcel" class="btn btn-dark">Generar Excel</a>
+                        <a href="@Url.Action("Create", "Producto")" class="btn btn-success">Nuevo Producto</a>
+
+                    </div>
+                 
+                    <div class="card card-body">
+                        <form asp-controller="Producto" asp-action="SubirExcel" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="archivoExcel" class="form-label">Subir Excel</label>
+                                <input type="file" name="archivoExcel" required class="form-control" />
+                            </div>
+                            <button type="submit" class="btn btn-primary"> Subir y guardar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div>
+   
+
+    
+
+    
+    @if (Model != null)
+    {
+        <table class="table table-striped table-bordered" id="tbProductos">
+            <thead class="table-dark">
+                <tr>
+                    <td>Nmbre</td>
+                    <td>Precio</td>
+                    <td>Cantidad</td>
+                    <td>Fecha Creacion</td>
+                    <td>Acciones</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var producto in Model)
+                {
+                    <tr>
+                        <th>@producto.Nombre</th>
+                        <th>@producto.Precio</th>
+                        <th>@producto.CantidadDisponible</th>
+                        <th>@producto.FechaCreacion</th>
+
+                        <th>
+                            <a class="btn btn-primary" asp-contproductoler="Producto" asp-action="Edit" asp-route-id="@producto.Id">Editar</a> |
+                            <a class="btn btn-danger" asp-contproductoler="Producto" asp-action="Delete" asp-route-id="@producto.Id">Eliminar</a>
+                        </th>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+</div>
+@section Scripts {
+   
+}

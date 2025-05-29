@@ -1,0 +1,61 @@
+﻿@model IEnumerable<Venta>
+@{
+    ViewData["Title"] = "Listado de Ventas";
+}
+
+<h1>Listado de Ventas</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Nueva Venta</a>
+</p>
+
+<form asp-action="Index" method="get">
+    <div class="form-group">
+        <label class="control-label">Estado:</label>
+        <select name="estado" class="form-control" asp-items="ViewBag.Estados" onchange="this.form.submit()"></select>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.FechaVenta)</th>
+            <th>Cliente</th>
+            <th>@Html.DisplayNameFor(model => model.Total)</th>
+            <th>@Html.DisplayNameFor(model => model.Estado)</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.FechaVenta)</td>
+                <td>@Html.DisplayFor(modelItem => item.Cliente.Nombre)</td>
+                <td>@Html.DisplayFor(modelItem => item.Total)</td>
+                <td>
+                    @if (item.Estado == 1)
+                    {
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Activa
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            <i class="fas fa-times-circle"></i> Anulada
+                        </span>
+                    }
+                </td>
+
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-info">Detalles</a>
+                    @if (item.Estado == 1)
+                    {
+                        <a asp-action="Anular" asp-route-id="@item.Id" class="btn btn-danger">Anular</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

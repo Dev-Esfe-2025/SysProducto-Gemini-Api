@@ -1,0 +1,77 @@
+﻿@model VentaFiltros
+
+<h2>Reporte de Ventas</h2>
+
+<form asp-action="DescargarReporte" method="get">
+
+    <div>
+        <label for="FechaInicio">Fecha Inicio:</label>
+        <input type="date" id="FechaInicio" name="FechaInicio" class="form-control" required />
+    </div>
+    <div>
+        <label for="FechaFin">Fecha Fin:</label>
+        <input type="date" id="FechaFin" name="FechaFin" class="form-control" required />
+    </div>
+    <div>
+        <label for="TipoReporte">Tipo de reporte:</label>
+        <select id="TipoReporte" name="TipoReporte" class="form-control">
+
+            <option value="1">PDF</option>
+            <option value="2">Excel</option>
+            <option value="3">Resumen Gemini</option>
+
+        </select>
+    </div>
+    <br />
+    <button type="submit" class="btn btn-primary">Generar Reporte</button>
+</form>
+
+@if (ViewBag.ResumenIA != null)
+{
+    @if (ViewBag.ResumenIA != null)
+    {
+        <div class="card mt-4">
+            <div class="card-header" style="background-color: #343a40; color: white;">
+                <h5 class="mb-0">Resumen Generado por IA</h5>
+            </div>
+            <div class="card-body" style="line-height: 1.6;">
+                @Html.Raw(ViewBag.ResumenIA)
+            </div>
+        </div>
+    }
+
+}
+
+
+@if (ViewBag.Ventas != null)
+{
+    <table class="table table-bordered table-sm mt-3">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Subtotal</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var venta in (List<Venta>)ViewBag.Ventas)
+            {
+                foreach (var d in venta.DetalleVentas)
+                {
+                    <tr>
+                        <td>@venta.FechaVenta.ToShortDateString()</td>
+                        <td>@venta.Cliente?.Nombre</td>
+                        <td>@d.Producto?.Nombre</td>
+                        <td>@d.Cantidad</td>
+                        <td>@d.SubTotal</td>
+                        <td>@venta.Total</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+

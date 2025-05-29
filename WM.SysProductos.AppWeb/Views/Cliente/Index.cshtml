@@ -1,0 +1,73 @@
+﻿@model IEnumerable<Cliente>
+<div class="container mt-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Clientes</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-12">
+
+                    <div class="form-group">
+
+                        <a asp-controller="Cliente" asp-action="Create" class="btn btn-primary">Nuevo</a>
+                        <a asp-controller="Cliente" asp-action="GenerarReportePDF" class="btn btn-success">Generar PDF</a>
+                        <a asp-action="ReporteClientesExcel" class="btn btn-dark">Generar Excel</a>
+                    </div>
+
+                    <div class="card card-body" >
+                        <form asp-action="SubirExcelClientes" asp-controller="Cliente" method="post" enctype="multipart/form-data">
+                            <div class="form-group">
+                                <label for="archivoExcel" class="form-label">Subir Excel</label>
+                                <input type="file" name="archivoExcel" required class="form-control" />
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-upload"></i> Subir Archivo
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div>
+    
+
+    @if (Model != null)
+    {
+        <table class="table table-striped table-bordered" id="tbClientes">
+            <thead class="table-dark">
+                <tr>
+                    <td>Nombre</td>
+                    <td>Direccion</td>
+                    <td>Telefono</td>
+                    <td>Email</td>
+                    <td>Acciones</td>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var cliente in Model)
+                {
+                    <tr>
+                        <th>@cliente.Nombre</th>
+                        <th>@cliente.Direccion</th>
+                        <th>@cliente.Telefono</th>
+                        <th>@cliente.Email</th>
+                        <th>
+                            <a class="btn btn-primary btn-sm" asp-controller="Proveedor" asp-action="Edit" asp-route-id="@cliente.Id">
+                                <i class="fas fa-edit"></i> 
+                            </a>
+                            |
+                            <a class="btn btn-danger btn-sm" asp-controller="Proveedor" asp-action="Delete" asp-route-id="@cliente.Id">
+                                <i class="fas fa-trash-alt"></i> 
+                            </a>
+                        </th>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

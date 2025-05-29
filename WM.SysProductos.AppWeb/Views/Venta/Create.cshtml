@@ -1,0 +1,201 @@
+﻿@model Venta
+
+@{
+    ViewData["Title"] = "Registrar Venta";
+    var productos = ViewBag.Productos as List<Producto>;
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-dark text-white text-center">
+            <h3 class="mb-0">Factura de Venta</h3>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cliente</label>
+                    <select asp-for="ClienteId" class="form-select" required>
+                        <option value="">Seleccione un cliente</option>
+                        @foreach (var item in ViewBag.Clientes)
+                        {
+                            <option value="@item.Value">@item.Text</option>
+                        }
+                    </select>
+                    <span asp-validation-for="ClienteId" class="text-danger"></span>
+                </div>
+
+                <div class="card bg-light shadow-sm p-3">
+                    <h5 class="fw-bold">Agregar Producto</h5>
+                    <div class="row">
+                        <div class="col-md-5">
+                            <label class="form-label">Producto</label>
+                            <select id="productoSeleccionado" class="form-select">
+                                <option value="">Seleccione un producto</option>
+                                @foreach (var p in productos)
+                                {
+                                    <option value="@p.Id" data-precio="@p.Precio" data-stock="@p.CantidadDisponible">@p.Nombre (@p.CantidadDisponible disponibles)</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Cantidad</label>
+                            <input type="number" id="cantidadSeleccionada" class="form-control" min="1" value="1" />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Precio</label>
+                            <input type="text" id="precioSeleccionado" class="form-control text-end" readonly />
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Subtotal</label>
+                            <input type="text" id="subtotalSeleccionado" class="form-control text-end bg-light fw-bold" readonly />
+                        </div>
+                        <div class="col-md-12 mt-2 text-end">
+                            <button type="button" id="agregarProducto" class="btn btn-success shadow-sm">
+                                <i class="fas fa-plus"></i> Agregar
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <h5 class="fw-bold">Detalle de Venta</h5>
+                        <table class="table table-bordered table-striped">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Producto</th>
+                                    <th class="text-center">Cantidad</th>
+                                    <th class="text-end">Precio Unitario</th>
+                                    <th class="text-end">Subtotal</th>
+                                    <th class="text-center">Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaProductos">
+                                <!-- Filas dinámicas aquí -->
+                            </tbody>
+                            <tfoot>
+                                <tr class="table-secondary">
+                                    <td colspan="3" class="text-end fw-bold">Total:</td>
+                                    <td class="text-end fw-bold">
+                                        <input type="text" id="total" name="Total" class="form-control-plaintext text-end fw-bold" readonly />
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm me-2">
+                            <i class="fas fa-save"></i> Guardar Venta
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary btn-lg shadow-sm">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        let index = 0;
+
+        // Actualizar precio y validar stock al seleccionar producto
+        document.getElementById("productoSeleccionado").addEventListener("change", function() {
+            let selectedOption = this.selectedOptions[0];
+            document.getElementById("precioSeleccionado").value = selectedOption.dataset.precio || 0;
+            calcularSubtotalSeleccionado();
+
+            // Validar stock máximo
+            let stock = parseInt(selectedOption.dataset.stock) || 0;
+            document.getElementById("cantidadSeleccionada").max = stock;
+        });
+
+        // Calcular subtotal al cambiar cantidad
+        document.getElementById("cantidadSeleccionada").addEventListener("input", calcularSubtotalSeleccionado);
+
+        function calcularSubtotalSeleccionado() {
+            let cantidad = document.getElementById("cantidadSeleccionada").value || 0;
+            let precio = document.getElementById("precioSeleccionado").value || 0;
+            let subtotal = cantidad * precio;
+            document.getElementById("subtotalSeleccionado").value = subtotal.toFixed(2);
+        }
+
+        // Agregar producto al detalle
+        document.getElementById("agregarProducto").addEventListener("click", function() {
+            let selectProducto = document.getElementById("productoSeleccionado");
+            let idProducto = selectProducto.value;
+            let nombreProducto = selectProducto.selectedOptions[0].text.split(' (')[0]; // Remover el stock del nombre
+            let cantidad = document.getElementById("cantidadSeleccionada").value;
+            let precio = document.getElementById("precioSeleccionado").value;
+            let subtotal = document.getElementById("subtotalSeleccionado").value;
+
+            if (!idProducto || cantidad <= 0 || precio <= 0) {
+                alert("Seleccione un producto y verifique los valores.");
+                return;
+            }
+
+            // Validar stock disponible
+            let stockDisponible = parseInt(selectProducto.selectedOptions[0].dataset.stock) || 0;
+            if (parseInt(cantidad) > stockDisponible) {
+                alert("No hay suficiente stock disponible para este producto.");
+                return;
+            }
+
+            let tbody = document.querySelector("#tablaProductos");
+            let tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${nombreProducto}<input type="hidden" name="DetalleVentas[${index}].IdProducto" value="${idProducto}"></td>
+                <td class="text-center"><input type="number" name="DetalleVentas[${index}].Cantidad" class="form-control cantidad text-center" min="1" value="${cantidad}" onchange="actualizarSubtotal(this)"></td>
+                <td class="text-end"><input type="text" name="DetalleVentas[${index}].PrecioUnitario" class="form-control precio text-end" value="${precio}" readonly></td>
+                <td class="text-end"><input type="text" name="DetalleVentas[${index}].SubTotal" class="form-control subtotal text-end fw-bold" value="${subtotal}" readonly></td>
+                <td class="text-center"><button type="button" class="btn btn-danger btn-sm btnEliminar"><i class="fas fa-trash"></i></button></td>
+            `;
+            tbody.appendChild(tr);
+            index++;
+            calcularTotal();
+
+            // Resetear formulario de selección
+            selectProducto.value = "";
+            document.getElementById("cantidadSeleccionada").value = 1;
+            document.getElementById("precioSeleccionado").value = "";
+            document.getElementById("subtotalSeleccionado").value = "";
+        });
+
+        // Eliminar producto del detalle
+        document.addEventListener("click", function(event) {
+            if (event.target.classList.contains("btnEliminar") || event.target.closest(".btnEliminar")) {
+                event.target.closest("tr").remove();
+                calcularTotal();
+            }
+        });
+
+        // Actualizar subtotal al modificar cantidad en el detalle
+        function actualizarSubtotal(input) {
+            let row = input.closest("tr");
+            let cantidad = parseFloat(row.querySelector(".cantidad").value) || 0;
+            let precio = parseFloat(row.querySelector(".precio").value) || 0;
+            let subtotal = cantidad * precio;
+            row.querySelector(".subtotal").value = subtotal.toFixed(2);
+            calcularTotal();
+        }
+
+        // Calcular total general
+        function calcularTotal() {
+            let total = 0;
+            document.querySelectorAll(".subtotal").forEach(sub => {
+                total += parseFloat(sub.value) || 0;
+            });
+            document.getElementById("total").value = total.toFixed(2);
+            document.getElementById("Total").value = total.toFixed(2); // Para el modelo
+        }
+    </script>
+}
