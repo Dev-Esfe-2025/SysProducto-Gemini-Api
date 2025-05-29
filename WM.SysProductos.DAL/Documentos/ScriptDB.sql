@@ -1,0 +1,70 @@
+﻿CREATE DATABASE wmproductosdb;
+
+CREATE TABLE Productos (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Precio DECIMAL(18,2) NOT NULL,
+    CantidadDisponible INT NOT NULL,
+    FechaCreacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Proveedores (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(255) NOT NULL,
+    NRC VARCHAR(50)  UNIQUE,
+    Direccion VARCHAR(80) NULL,
+    Telefono VARCHAR(20) NULL,
+    Email VARCHAR(100) NULL
+);
+
+
+CREATE TABLE Compras (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    FechaCompra DATETIME NOT NULL,
+    IdProveedor INT NOT NULL,
+    Total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    Estado TINYINT NOT NULL DEFAULT 1,
+    FOREIGN KEY (IdProveedor) REFERENCES Proveedores(Id)
+);
+
+CREATE TABLE DetalleCompras (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    IdCompra INT NOT NULL,
+    IdProducto INT NOT NULL,
+    Cantidad INT NOT NULL,
+    PrecioUnitario DECIMAL(10,2) NOT NULL,
+    SubTotal DECIMAL(10,2) NOT NULL,
+    FOREIGN KEY (IdCompra) REFERENCES Compras(Id),
+    FOREIGN KEY (IdProducto) REFERENCES Productos(Id)
+);
+
+
+
+CREATE TABLE Clientes (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Nombre VARCHAR(100) NOT NULL,
+    Direccion VARCHAR(200) NULL,
+    Telefono VARCHAR(255) NULL,
+    Email VARCHAR(100) NULL
+);
+
+
+CREATE TABLE Ventas (
+    Id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    FechaVenta DATETIME NOT NULL,
+    ClienteId INT NOT NULL,
+    Total DECIMAL(10,2) NOT NULL,
+    Estado TINYINT NOT NULL,
+    CONSTRAINT FK_Venta_Cliente FOREIGN KEY (ClienteId) REFERENCES Clientes(Id)
+);
+
+CREATE TABLE DetalleVentas (
+    Id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    VentaId INT NOT NULL,
+    IdProducto INT NOT NULL,
+    Cantidad INT NOT NULL,
+    PrecioUnitario DECIMAL(10,2) NOT NULL,
+    SubTotal DECIMAL(10,2) NOT NULL,
+    CONSTRAINT FK_DetalleVenta_Venta FOREIGN KEY (VentaId) REFERENCES Ventas(Id),
+    CONSTRAINT FK_DetalleVenta_Producto FOREIGN KEY (IdProducto) REFERENCES Productos(Id)
+);
